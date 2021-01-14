@@ -59,5 +59,8 @@ sysinfo.txt
 crashlytics-build.properties
 
 SaveBinaryData
+SaveBinaryData.meta
 SaveJsonData
+SaveJsonData.meta
 SaveXMLData
+SaveXMLData.meta
