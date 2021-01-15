@@ -1,2 +1,2 @@
-# GameProject_2
+# GameProject
 Test ReadMe
