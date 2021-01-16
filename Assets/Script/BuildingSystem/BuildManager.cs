@@ -152,8 +152,8 @@ public class BuildManager : MonoBehaviour
         selectTilePos = tileMapReader.GetGridPos(Input.mousePosition, true); //return ค่าจาก scirpt TileMapReader
 
         /*
-        !Note: หลังจากที่คำนวณ position ใน script TileMapReader ใหม่แล้ว TileMapSelectMark.markCellPos ก็จะเป็น position ที่ถูกคำนวณใหม่เหมือนกัน
-                !ฉนั้นเลยไม่ต้องเอา TileMapSelectMark.marCellPos ไป + กับ adjIslandPos อีก
+            !Note: หลังจากที่คำนวณ position ใน script TileMapReader ใหม่แล้ว TileMapSelectMark.markCellPos ก็จะเป็น position ที่ถูกคำนวณใหม่เหมือนกัน
+            !ฉนั้นเลยไม่ต้องเอา TileMapSelectMark.marCellPos ไป + กับ adjIslandPos อีก
         */
         
     }
@@ -249,19 +249,23 @@ public class BuildManager : MonoBehaviour
                     {
                         for(int j = 0; j < BuildingSaveList[x].SavePosition.Count; j++) //check postion ใน list ย้อยทั้งหมด
                         {
-                            if(BuildingSaveList[x].SavePosition[j] == AllBuidlingPositionCheckList.AllBuildPositionSave[i]) // ถ้า position ใน list ย้อยเท่ากับ position ใน list ใหญ
+                            if(BuildingSaveList[x].SavePosition[j] == AllBuidlingPositionCheckList.AllBuildPositionSave[i]) // ถ้า position ใน list ย้อยเท่ากับ position ใน list ใหญ่
                             {
-                                AllBuidlingPositionCheckList.AllBuildPositionSave.Remove(BuildingSaveList[x].SavePosition[j]); //ลบ postion ใน list ใหญ่
-                                objSize++;
-                                    
-                                if(objSize == BuildingSaveList[x].SavePosition.Count) //ถ้าลบใน list ใหญ่หมดแล้วค่อยลบใน list ย้อย
+                                for(int k = 0; k < BuildingSaveList[x].SavePosition.Count; k++) //check postion ใน list ย้อยนั้นทั้งหมด
                                 {
-                                    Destroy(BuildingSaveList[x].Building.gameObject);
-                                    BuildingSaveList[x].SavePosition = null;
-                                    BuildingSaveList.RemoveAt(x);
-                                    objSize = 0;
-                                    break;
+                                    AllBuidlingPositionCheckList.AllBuildPositionSave.Remove(BuildingSaveList[x].SavePosition[k]);
+                                    objSize++;
+
+                                    if(objSize == BuildingSaveList[x].SavePosition.Count) //ถ้าลบใน list ใหญ่หมดแล้วค่อยลบใน list ย้อย
+                                    {
+                                        Destroy(BuildingSaveList[x].Building.gameObject);
+                                        BuildingSaveList[x].SavePosition = null;
+                                        BuildingSaveList.RemoveAt(x);
+                                        objSize = 0;
+                                        break;
+                                    }
                                 }
+                                return;
                             }
                         }
                     }

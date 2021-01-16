@@ -63,9 +63,7 @@ public class GenerateMap : MonoBehaviour
                 isFirstIslandGen = true;
                 Island = Instantiate(IslandList[0], new Vector3(0,0,-0.5f), Quaternion.identity);
                 Island.transform.parent = MapCollection.transform;
-                JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap.Add(0);
                 IslandIndexSpawnList.Add(0);
-                JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap.Add(new Vector3(0,0,-0.5f));
                 IslandSpawnPosList.Add(new Vector3(0,0,-0.5f));
                 IslandIndex++;
             }
@@ -74,12 +72,11 @@ public class GenerateMap : MonoBehaviour
                 Vector3 IslandSpawnPos = new Vector3(0 + Mathf.FloorToInt(Random.Range(-IslandRandomGenPos,IslandRandomGenPos)),0 + Random.Range(-IslandRandomGenPos,IslandRandomGenPos) ,-0.5f);
                 Island = Instantiate(IslandList[1], IslandSpawnPos, Quaternion.identity);
                 yield return new WaitForSeconds(0.1f);
+
                 if(Island.GetComponent<IslandSafeArea>().isOverlap == false)
                 {
                     Island.transform.parent = MapCollection.transform;
-                    JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap.Add(1);
                     IslandIndexSpawnList.Add(1);
-                    JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap.Add(IslandSpawnPos);
                     IslandSpawnPosList.Add(IslandSpawnPos);
                     i++;
                     IslandIndex++;
@@ -89,6 +86,12 @@ public class GenerateMap : MonoBehaviour
                     Destroy(Island);
                 }
             }
+        }
+
+        for(int j = 0; j < IslandIndexSpawnList.Count; j++)
+        {
+            JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap.Add(IslandIndexSpawnList[j]);
+            JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap.Add(IslandSpawnPosList[j]);
         }
         JsonSaveSystem.JSInstanse.MapSaveJson();
         FlatGenerate();
