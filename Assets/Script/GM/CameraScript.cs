@@ -18,8 +18,7 @@ public class CameraScript : MonoBehaviour
     {
         if(GM.GMinstanse.GetisPC == false)
         {
-            /*
-            if(RaycastBuildZone.RCBZinstanse.GetBuildMode == false)
+            if(BuildManager.BMinstanse.GetSetinBuildMode == false)
             {
                 VCam.m_Follow = Player.transform;
             }   
@@ -27,7 +26,6 @@ public class CameraScript : MonoBehaviour
             {
                 VCam.m_Follow = BuildModeOriginPoint.transform;
             } 
-            */
         }
     }
 }

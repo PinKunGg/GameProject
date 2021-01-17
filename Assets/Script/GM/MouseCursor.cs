@@ -4,7 +4,15 @@ using UnityEngine;
 
 public class MouseCursor : MonoBehaviour
 {
+    public static MouseCursor MCInstanse;
     [SerializeField]GameObject LeftClickFx, RightClickFx;
+    private void Awake()
+    {
+        if(MCInstanse == null)
+        {
+            MCInstanse = this;
+        }    
+    }
     private void Start()
     {
         Cursor.visible = false;

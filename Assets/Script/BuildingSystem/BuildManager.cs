@@ -149,7 +149,15 @@ public class BuildManager : MonoBehaviour
     }
     void SelectTile() //ส่งพิกัดไปให้ Tilemap แสดงว่ากำลังเลือกพื้นที่ไหนอยู่
     {
-        selectTilePos = tileMapReader.GetGridPos(Input.mousePosition, true); //return ค่าจาก scirpt TileMapReader
+        if(GM.GMinstanse.GetisPC)
+        {
+            selectTilePos = tileMapReader.GetGridPos(Input.mousePosition, true); //return ค่าจาก scirpt TileMapReader
+        }
+        else
+        {
+            selectTilePos = tileMapReader.GetGridPos(MouseCursor.MCInstanse.transform.position, false); //return ค่าจาก scirpt TileMapReader
+        }
+        
 
         /*
             !Note: หลังจากที่คำนวณ position ใน script TileMapReader ใหม่แล้ว TileMapSelectMark.markCellPos ก็จะเป็น position ที่ถูกคำนวณใหม่เหมือนกัน
@@ -161,7 +169,14 @@ public class BuildManager : MonoBehaviour
     {
         Vector2 playerPos = Player.transform.localPosition;
 
-        Vector2 camPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        if(GM.GMinstanse.GetisPC)
+        {
+            Vector2 camPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        }
+        else
+        {
+            Vector2 camPos = Camera.main.ScreenToWorldPoint(MouseCursor.MCInstanse.transform.position);
+        }
 
         isSelect = Vector2.Distance(playerPos,(Vector2Int)selectTilePos) < MaxBuildDistanse; //check ว่า พื้นที่นั้นยังอยู่ใน area ที่สามารถสร้างได้รึป่าว
 
