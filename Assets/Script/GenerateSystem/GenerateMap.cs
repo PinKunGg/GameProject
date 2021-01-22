@@ -11,6 +11,7 @@ public class GenerateMap : MonoBehaviour
     public List<int> IslandIndexSpawnList;
     public List<Vector3> IslandSpawnPosList;
     public GameObject Loading;
+    public bool GenNextIsland;
     [SerializeField]private GameObject MapCollection;
     [SerializeField]private int GenX, GenY, IslandCount, IslandRandomGenPos;
     [SerializeField] Tilemap OceanTileMap;
@@ -22,13 +23,14 @@ public class GenerateMap : MonoBehaviour
         if(GenMapInstanse == null)
         {
             GenMapInstanse = this;
-        }    
+        }
     }
     private void Start()
     {
         JsonSaveSystem.JSInstanse.MapLoadJson();
         SaveAndLoadInvoke.SALIKinstanse.AddSavingEventLisener(SaveMap);
         SaveAndLoadInvoke.SALIKinstanse.AddLoadingEventLisener(LoadMap);
+        //StartCoroutine(IslandGenerate());
 
         Loading.SetActive(true);
     }
@@ -46,10 +48,12 @@ public class GenerateMap : MonoBehaviour
         {
             for(int i = 0; i < JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap.Count; i++)
             {
+                Debug.Log("11111");
                 Island =  Instantiate(IslandList[JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap[i]], JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap[i], Quaternion.identity);
                 IslandIndexSpawnList.Add(JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap[i]);
                 IslandSpawnPosList.Add(JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap[i]);
                 Island.transform.parent = MapCollection.transform;
+                Island.name = "Island_" + i + " / " + Island.transform.position;
             }
             FlatGenerate();
         }
@@ -63,23 +67,64 @@ public class GenerateMap : MonoBehaviour
                 isFirstIslandGen = true;
                 Island = Instantiate(IslandList[0], new Vector3(0,0,-0.5f), Quaternion.identity);
                 Island.transform.parent = MapCollection.transform;
+                Debug.Log("222222222");
                 IslandIndexSpawnList.Add(0);
                 IslandSpawnPosList.Add(new Vector3(0,0,-0.5f));
-                IslandIndex++;
+                Island.name = "Island_" + i + " / " + Island.transform.position;
+                GenNextIsland = false;
+                Island.GetComponentInChildren<IslandManager>().StartGenerateBiome();
+                    
+                a:
+                while(!GenNextIsland)
+                {
+                    yield return new WaitForSeconds(0.01f);
+                    goto a;
+                }
+
+                if(IslandIndex < IslandList.Count - 1)
+                {
+                    IslandIndex++;
+                }
+                else
+                {
+                    IslandIndex = 1;
+                }
+                
             }
             else
             {
                 Vector3 IslandSpawnPos = new Vector3(0 + Mathf.FloorToInt(Random.Range(-IslandRandomGenPos,IslandRandomGenPos)),0 + Random.Range(-IslandRandomGenPos,IslandRandomGenPos) ,-0.5f);
-                Island = Instantiate(IslandList[1], IslandSpawnPos, Quaternion.identity);
+                Island = Instantiate(IslandList[IslandIndex], IslandSpawnPos, Quaternion.identity);
                 yield return new WaitForSeconds(0.1f);
-
+                
+                
                 if(Island.GetComponent<IslandSafeArea>().isOverlap == false)
                 {
+                    Debug.Log("33333333333");
                     Island.transform.parent = MapCollection.transform;
-                    IslandIndexSpawnList.Add(1);
+                    IslandIndexSpawnList.Add(IslandIndex);
                     IslandSpawnPosList.Add(IslandSpawnPos);
+                    Island.name = "Island_" + i + " / " + Island.transform.position;
+                    GenNextIsland = false;
+                    Island.GetComponentInChildren<IslandManager>().StartGenerateBiome();
+                    
+                    a:
+                    while(!GenNextIsland)
+                    {
+                        yield return new WaitForSeconds(0.01f);
+                        goto a;
+                    }
+
                     i++;
-                    IslandIndex++;
+                    if(IslandIndex < IslandList.Count - 1)
+                    {
+                        IslandIndex++;
+                    }
+                    else
+                    {
+                        IslandIndex = 1;
+                    }
+                    
                 }
                 else
                 {
@@ -90,13 +135,12 @@ public class GenerateMap : MonoBehaviour
 
         for(int j = 0; j < IslandIndexSpawnList.Count; j++)
         {
+            Debug.Log("4444444444");
             JsonSaveSystem.JSInstanse.MapData.IslandIndexOnMap.Add(IslandIndexSpawnList[j]);
             JsonSaveSystem.JSInstanse.MapData.IslandPosOnMap.Add(IslandSpawnPosList[j]);
         }
         JsonSaveSystem.JSInstanse.MapSaveJson();
         FlatGenerate();
-
-        //Loading.SetActive(false);
     }
     private void FlatGenerate()
     {
@@ -115,6 +159,11 @@ public class GenerateMap : MonoBehaviour
                     OceanTileMap.SetTile(SpawnPos,OceanTile);
                 }
             }
+        }
+        GameObject.Find("Player").GetComponent<Collider2D>().enabled = true;
+        foreach(var item in MapCollection.GetComponentsInChildren<IslandSafeArea>())
+        {
+            item.isGenMapFinish = true;
         }
         Loading.SetActive(false);
     }

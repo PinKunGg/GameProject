@@ -15,7 +15,7 @@ public class BuildManager : MonoBehaviour
     public bool[] AreaCheck;
 
     [SerializeField] TileMapReader tileMapReader;
-    [SerializeField] BuildingContainer BuildingContainer;
+    public BuildingContainer BuildingContainer;
     [SerializeField] BuildingData[] BuildingDataList;
     [SerializeField] Vector2 ZoneSize = new Vector2(1,1);
     [SerializeField] float MaxBuildDistanse = 2f;
@@ -105,7 +105,12 @@ public class BuildManager : MonoBehaviour
 
                 for(int j = 0; j < BuildingSaveList[i].SavePosition.Count;j++)
                 {
-                    JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap.Add(BuildingSaveList[i].SavePosition[j]);
+                    Vector3[] pos = new Vector3[BuildingSaveList[i].SavePosition.Count];
+                    for(int l = 0; l < BuildingSaveList[i].SavePosition.Count; l++)
+                    {
+                        pos[l] = new Vector3(BuildingSaveList[i].SavePosition[j].x,BuildingSaveList[i].SavePosition[j].y,BuildingSaveList[i].SavePosition[j].z);
+                        JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap.Add(pos[l]);
+                    }
                 }
             }
         }
@@ -121,28 +126,37 @@ public class BuildManager : MonoBehaviour
     void LoadBuilding()
     {
         int LastPosIndex = 0; //ใช้สำหรับกำหนดลำดับเริ่มต้นของ Position Building ตัวต่อไป
-        Vector3Int[] SavePos = new Vector3Int[0]; //ใช้สำหรับเก็บข้อมูล Position ของ Building ตัวนั้น ๆ
+        Vector3Int[] AlterSavePos = new Vector3Int[0]; //ใช้สำหรับเก็บข้อมูล Position ของ Building ตัวนั้น ๆ
+        Vector3[] SavePos = new Vector3[0];
         
         if(JsonSaveSystem.JSInstanse.BuildingData.BuildingIndexOnMap.Count != 0) //ถ้ามีข้อมูล
         {
             for(int i = 0; i < JsonSaveSystem.JSInstanse.BuildingData.BuildingIndexOnMap.Count; i++) //นับ Building ทั้งหมด
             {
-                SavePos = new Vector3Int[JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i]]; //สร้าง Array ตามขนาดของ Building นั้น
-                for(int x = 0; x < SavePos.Length; x++) //Reset SpawnPos เพื่อใช้สำหรับ Building ตัวต่อไป
+                AlterSavePos = new Vector3Int[JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i]]; //สร้าง Array ตามขนาดของ Building นั้น
+                SavePos = new Vector3[JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i]];
+                for(int x = 0; x < AlterSavePos.Length; x++) //Reset SpawnPos เพื่อใช้สำหรับ Building ตัวต่อไป
                 {
-                    SavePos[x] = Vector3Int.zero; //ลบข้อมูลทั้งหมดใน Array SavePos
+                    AlterSavePos[x] = Vector3Int.zero; //ลบข้อมูลทั้งหมดใน Array SavePos
+                    SavePos[x] = Vector3.zero;
                 }
                 GameObject building = Instantiate(BuildingContainer.BuildingCon[JsonSaveSystem.JSInstanse.BuildingData.BuildingIndexOnMap[i]]); //สร้าง Building จาก Index ที่ save ไว้
 
                 for(int j = 0; j < JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i]; j++) //นับว่าขนาดพื้นที่ของ Building นี้มีขนาดเท่าไร
                 {
                     building.transform.position = JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex]; //กำหนด Position ของ Building นี้
+                    building.name = building.name + " / " + JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex];
                     building.transform.parent = BuildingCollection.transform; //นำ Building ไปเก็บไว้ใน Gameobject "BuildingCollection"
                     
-                    SavePos[j] = JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex + j]; //set position ทั้งหมดของ Building ใน Array SavePos
-                    AllBuidlingPositionCheckList.AllBuildPositionSave.Add(SavePos[j]); //นำ Position ทั้งหมดใน file save คืนค่าให้กับ "ตัว check position ในการสร้าง" ทั้งหมด 
+                    AlterSavePos[j] = Vector3Int.FloorToInt(JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex + j]); //set position ทั้งหมดของ Building ใน Array SavePos
+                    for(int l = 0; l < AlterSavePos.Length; l++)
+                    {
+                        SavePos[j] = new Vector3(JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex + j].x,JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex + j].y,JsonSaveSystem.JSInstanse.BuildingData.BuildingPosOnMap[LastPosIndex + j].z);
+                    }
+                    
+                    AllBuidlingPositionCheckList.AllBuildPositionSave.Add(AlterSavePos[j]); //นำ Position ทั้งหมดใน file save คืนค่าให้กับ "ตัว check position ในการสร้าง" ทั้งหมด 
                 }
-                BuildingSaveList.Add(new BuildingSave(building,JsonSaveSystem.JSInstanse.BuildingData.BuildingIndexOnMap[i],JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i],SavePos)); //set ค่าคืนให้กับ BuildingSaveList เพื่อใช้ในการ "ลบ" Building หาก player ต้องการ
+                BuildingSaveList.Add(new BuildingSave(building,JsonSaveSystem.JSInstanse.BuildingData.BuildingIndexOnMap[i],JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i],SavePos,AlterSavePos)); //set ค่าคืนให้กับ BuildingSaveList เพื่อใช้ในการ "ลบ" Building หาก player ต้องการ
                 LastPosIndex += JsonSaveSystem.JSInstanse.BuildingData.BuildingSize[i]; //กำหนดจุดเริ่มต้นของ Position ใน Array ตัวต่อไป
             }
         }
@@ -264,11 +278,12 @@ public class BuildManager : MonoBehaviour
                     {
                         for(int j = 0; j < BuildingSaveList[x].SavePosition.Count; j++) //check postion ใน list ย้อยทั้งหมด
                         {
-                            if(BuildingSaveList[x].SavePosition[j] == AllBuidlingPositionCheckList.AllBuildPositionSave[i]) // ถ้า position ใน list ย้อยเท่ากับ position ใน list ใหญ่
+                            if((BuildingSaveList[x].SavePosition[j] == AllBuidlingPositionCheckList.AllBuildPositionSave[i]) || (BuildingSaveList[x].AlterSavePosition[j] == AllBuidlingPositionCheckList.AllBuildPositionSave[i])) // ถ้า position ใน list ย้อยเท่ากับ position ใน list ใหญ่
                             {
                                 for(int k = 0; k < BuildingSaveList[x].SavePosition.Count; k++) //check postion ใน list ย้อยนั้นทั้งหมด
                                 {
-                                    AllBuidlingPositionCheckList.AllBuildPositionSave.Remove(BuildingSaveList[x].SavePosition[k]);
+                                    AllBuidlingPositionCheckList.AllBuildPositionSave.Remove(Vector3Int.FloorToInt(BuildingSaveList[x].SavePosition[k]));
+                                    
                                     objSize++;
 
                                     if(objSize == BuildingSaveList[x].SavePosition.Count) //ถ้าลบใน list ใหญ่หมดแล้วค่อยลบใน list ย้อย
@@ -309,15 +324,15 @@ public class BuildManager : MonoBehaviour
                     {
                         if(BuildingType == 0)
                         {
-                            AreaCheck[size] = (tileData.isGround == true && tileData.isWater == false);
+                            AreaCheck[size] = ((tileData.isGround || tileData.isShortGrass || tileData.isMountainZone) && !tileData.isWater);
                         }
                         else if(BuildingType == 1)
                         {
-                            AreaCheck[size] = (tileData.isGround == false && tileData.isWater == true);
+                            AreaCheck[size] = ((!tileData.isGround || !tileData.isShortGrass || !tileData.isMountainZone) && tileData.isWater);
                         }
                         else if(BuildingType == 2)
                         {
-                            AreaCheck[size] = (tileData.isGround == true || tileData.isWater == true);
+                            AreaCheck[size] = (tileData.isGround || tileData.isShortGrass || tileData.isMountainZone || tileData.isWater);
                         }
                     }
                     else
@@ -371,7 +386,12 @@ public class BuildManager : MonoBehaviour
         {
             AllBuidlingPositionCheckList.AllBuildPositionSave.Add(TileMapSelectMarker.markCellPos[i]);
         }
-        BuildingSaveList.Add(new BuildingSave(building, BuildingIndex, (int)size,TileMapSelectMarker.markCellPos));
+        Vector3[] pos = new Vector3[TileMapSelectMarker.markCellPos.Length];
+        for(int i = 0; i < TileMapSelectMarker.markCellPos.Length; i++)
+        {
+            pos[i] = new Vector3(TileMapSelectMarker.markCellPos[i].x,TileMapSelectMarker.markCellPos[i].y,TileMapSelectMarker.markCellPos[i].z);
+        }
+        BuildingSaveList.Add(new BuildingSave(building, BuildingIndex, (int)size,pos,TileMapSelectMarker.markCellPos));
     }
     private void OnDrawGizmos()
     {
@@ -386,21 +406,27 @@ public class BuildManager : MonoBehaviour
 public class BuildingSave
 {
     public GameObject Building;
-    public List<Vector3Int> SavePosition;
+    public List<Vector3> SavePosition;
+    public List<Vector3Int> AlterSavePosition;
     public int BuildingSize;
     public int BuildingIndex;
 
-    public BuildingSave(GameObject obj, int index, int size, Vector3Int[] pos)
+    public BuildingSave(GameObject obj, int index, int size, Vector3[] pos, Vector3Int[] alterpos)
     {
         Building = obj;
         BuildingIndex = index;
         BuildingSize = size;
 
-        SavePosition = new List<Vector3Int>();
+        SavePosition = new List<Vector3>();
+        AlterSavePosition = new List<Vector3Int>();
     
         foreach(var item in pos)
         {
             SavePosition.Add(item);
+        }
+        foreach(var item in alterpos)
+        {
+            AlterSavePosition.Add(item);
         }
     }
 }

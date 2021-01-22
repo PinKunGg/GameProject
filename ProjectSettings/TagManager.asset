@@ -11,6 +11,9 @@ TagManager:
   - Ground
   - Water
   - Island
+  - Stone
+  - Tree
+  - Burry
   layers:
   - Default
   - TransparentFX
@@ -24,7 +27,7 @@ TagManager:
   - Ground
   - Building
   - IslandChecker
-  - 
+  - Interacable
   - 
   - 
   - 
@@ -59,6 +62,12 @@ TagManager:
     locked: 0
   - name: UI
     uniqueID: 403390779
+    locked: 0
+  - name: Enviromnet
+    uniqueID: 3939988835
+    locked: 0
+  - name: UIFx
+    uniqueID: 3427877885
     locked: 0
   - name: Cursor
     uniqueID: 458911281

@@ -11,6 +11,10 @@ public class PlayerController : MonoBehaviour
         get{ return PlayerPos; }
         set{ this.transform.position = value; }
     }
+    private void Awake()
+    {
+        GetComponent<Collider2D>().enabled = false;
+    }
     private void Start()
     {
         SaveAndLoadInvoke.SALIKinstanse.AddSavingEventLisener(SavePlayerData);
